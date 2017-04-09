@@ -5,7 +5,7 @@ class DockerCmdBase(object):
     def __init__(self, parent):
         self.parent = parent
 
-class RunCmd(Cmd):
+class RunCmd(DockerCmdBase):
     def __init__(self):
         self.cmd = ['docker', 'run']
 
@@ -18,7 +18,7 @@ class RunCmd(Cmd):
     def run(self):
         pass
 
-class StartCmd(Cmd):
+class StartCmd(DockerCmdBase):
     def __init__(self):
         cmd = ['docker', 'start']
 
