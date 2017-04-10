@@ -1,7 +1,11 @@
-class Board:
-    def __init__(self, settings):
-        self.settings = settings
+from . import BaseObject
+from .exception import CfgError
 
-    def show(self):
-        print(self.settings)
+class Board(BaseObject):
+    BOARD_INFO_NECESSARY=['chassis', 'slot', 'cpu']
+
+    def get_neccessary_cfg_key(self):
+        return self.BOARD_INFO_NECESSARY
+
+
 

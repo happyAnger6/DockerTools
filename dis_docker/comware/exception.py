@@ -1,0 +1,2 @@
+class CfgError(Exception):
+    pass
