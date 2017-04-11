@@ -1,6 +1,14 @@
 import six
-
 import subprocess
+import logging
+import netaddr
+
+LOG=logging.getLogger(__name__)
+
+class ProcessExecutionError(RuntimeError):
+    def __init__(self, message, returncode):
+        super(ProcessExecutionError, self).__init__(message)
+        self.returncode = returncode
 
 def safe_decode_utf8(s):
     """Safe decode a str from UTF.
@@ -11,6 +19,9 @@ def safe_decode_utf8(s):
     if six.PY3 and isinstance(s, bytes):
         return s.decode('utf-8', 'surrogateescape')
     return s
+
+def get_ip_version(ip_or_cidr):
+    return netaddr.IPNetwork(ip_or_cidr).version
 
 def addl_env_args(addl_env):
     if addl_env is None:
@@ -28,6 +39,7 @@ def create_process(cmd, process_input=None,
                      stderr=subprocess.PIPE)
     return obj, cmd
 
+
 def execute(cmd, process_input=None, addl_env=None,
             check_exit_code=True, return_stderr=False, log_fail_as_error=True,
             extra_ok_codes=None, run_as_root=False):
@@ -39,9 +51,29 @@ def execute(cmd, process_input=None, addl_env=None,
         obj, cmd = create_process(cmd, run_as_root=run_as_root,
                                   addl_env=addl_env)
         _stdout, _stderr = obj.communicate(_process_input)
+        returncode = obj.returncode
         obj.stdin.close()
         _stdout = safe_decode_utf8(_stdout)
         _stderr = safe_decode_utf8(_stderr)
-    finally:
-        return _stdout, _stderr if return_stderr else _stdout
+        extra_ok_codes = extra_ok_codes or []
+        if returncode and returncode not in extra_ok_codes:
+            msg = ("Exit code: %(returncode)d; "
+                    "Stdin: %(stdin)s; "
+                    "Stdout: %(stdout)s; "
+                    "Stderr: %(stderr)s") % {
+                      'returncode': returncode,
+                      'stdin': process_input or '',
+                      'stdout': _stdout,
+                      'stderr': _stderr}
 
+            if log_fail_as_error:
+                LOG.error(msg)
+            if check_exit_code:
+                raise ProcessExecutionError(msg, returncode=returncode)
+        else:
+            LOG.debug("Exit code:%d", returncode)
+
+    finally:
+        pass
+
+    return (_stdout, _stderr) if return_stderr else _stdout
