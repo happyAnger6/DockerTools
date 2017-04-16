@@ -32,7 +32,7 @@ def create_process(cmd, process_input=None,
                 run_as_root=False, addl_env=None):
     cmd = list(map(str, addl_env_args(addl_env) + cmd))
     if run_as_root:
-        cmd = "sudo" + cmd
+        cmd = ["sudo"] + cmd
     obj = subprocess.Popen(cmd, shell=False,
                      stdin=subprocess.PIPE,
                      stdout=subprocess.PIPE,
@@ -48,6 +48,8 @@ def execute(cmd, process_input=None, addl_env=None,
             _process_input = process_input.encode('UTF-8')
         else:
             _process_input = None
+        print("execute cmd:%s"%cmd)
+        print("cmd",cmd)
         obj, cmd = create_process(cmd, run_as_root=run_as_root,
                                   addl_env=addl_env)
         _stdout, _stderr = obj.communicate(_process_input)

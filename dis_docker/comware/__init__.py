@@ -1,7 +1,8 @@
 from .exception import CfgError
 
 class BaseObject:
-    def __init__(self, settings):
+    def __init__(self, name, settings):
+        self._name = name
         self._settings = settings
         self._check_settings()
 
@@ -12,6 +13,10 @@ class BaseObject:
 
     def get_neccessary_cfg_key(self):
         return []
+
+    @property
+    def name(self):
+        return self._name
 
     def show(self):
         print(self.__class__,self._settings)
