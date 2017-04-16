@@ -6,13 +6,13 @@ TAR_FILE="pack.tar"
 source ${CURDIR}/log.sh
 
 debug_flag=6
-base_dir=$1
-base_file=$2
-pack_file=$3
 
-if [ $# -ne 3 ]
+base_file=$1
+pack_file=$2
+
+if [ $# -ne 2 ]
 then
-	echo "usage:$0 <base_dir> <pack_base_filename> <tar_filename>!!!"
+	echo "usage:$0 <pack_base_filename> <tar_filename>!!!"
 	exit 1
 fi
 
@@ -22,9 +22,16 @@ then
 	exit 1
 fi
 
+TAR_FILE=$pack_file
+
 if [ -d ${PACKDIR} ]
 then
 	rm -rf ${PACKDIR}
+fi
+
+if [ ! -d ${PACKDIR} ]
+then
+	mkdir -p ${PACKDIR}
 fi
 
 function copy_file()
@@ -36,11 +43,6 @@ function copy_file()
 		return 1
 	fi
 	
-	if [ ! -d ${PACKDIR} ]
-	then
-		mkdir -p ${PACKDIR}
-	fi
-	
 	if [ -f ${PACKDIR}$file ]
 	then
 		info_log "$file already exist!"
@@ -50,6 +52,16 @@ function copy_file()
 	if [ ! -f $file ]
 	then
 		err_log "source file $file not exist!"
+	fi
+
+	if [ -d $file ]
+	then
+		if [ ! -d ${PACKDIR}/$file ]
+		then
+			mkdir -p ${PACKDIR}/$file
+		fi
+		cp -rf $file/* ${PACKDIR}/$file
+		return 0
 	fi
 
 	info_log "copy file $file"
@@ -89,6 +101,7 @@ do
 	info_log "copy $file"
 	copy_file $file	
 done
+
 IFS=$IFS_OLD
 
 pushd ${PACKDIR} > /dev/null

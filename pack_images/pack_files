@@ -2,3 +2,4 @@
 /bin/ls
 /usr/bin/vim
 /usr/bin/gdb
+/usr/include/sys
